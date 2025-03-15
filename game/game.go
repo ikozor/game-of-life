@@ -1,4 +1,9 @@
 package game
 
-type game interface {
+type Game interface {
+	GetNextGen()
+	GetCurGen() [][]bool
+	
 }
+
+

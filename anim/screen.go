@@ -5,12 +5,12 @@ import (
 )
 
 type screen struct {
-	width, height int
-	screen        tcell.Screen
-	defStyle      tcell.Style
+	screen      tcell.Screen
+	defStyle    tcell.Style
+	Dead, Alive rune
 }
 
-func CreateScreen(width, height int) (*screen, error) {
+func CreateScreen(dead, alive rune) (*screen, error) {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return nil, err
@@ -23,13 +23,22 @@ func CreateScreen(width, height int) (*screen, error) {
 	s.SetStyle(defStyle)
 
 	s.Clear()
-	return &screen{screen: s, width: width, height: height, defStyle: defStyle}, nil
+	return &screen{
+		screen:   s,
+		defStyle: defStyle,
+		Dead:     dead,
+		Alive:    alive,
+	}, nil
 }
 
-func (s *screen) UpdateWithMatrix(matrix [][]rune) {
-	for y := 0; y < s.height; y++ {
-		for x := 0; x < s.width; x++ {
-			s.screen.SetContent(x, y, matrix[y][x], nil, s.defStyle)
+func (s *screen) UpdateWithMatrix(matrix [][]int8) {
+	for y := 1; y < len(matrix)-1; y++ {
+		for x := 1; x < len(matrix[y])-1; x++ {
+			if matrix[y][x] == 1 {
+				s.screen.SetContent(x-1, y-1, s.Alive, nil, s.defStyle)
+			} else {
+				s.screen.SetContent(x-1, y-1, s.Dead, nil, s.defStyle)
+			}
 		}
 
 	}
