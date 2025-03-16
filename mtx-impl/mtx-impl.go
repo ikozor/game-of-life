@@ -55,10 +55,10 @@ func CreateNewGame(inputPath string, dead, alive rune) (*MatrixImpl, error) {
 	return &MatrixImpl{curGen: matrix}, nil
 }
 
-func (m *MatrixImpl) CalcNextGen() {
+func (m *MatrixImpl) CalcNextGen(done chan bool) {
 	nextGen := make([][]int8, len(m.curGen))
 	for y := 1; y < len(m.curGen)-1; y++ {
-			nextGen[y] = make([]int8, len(m.curGen[y]))
+		nextGen[y] = make([]int8, len(m.curGen[y]))
 		for x := 1; x < len(m.curGen[y])-1; x++ {
 			var aliveNearby int8
 
@@ -83,8 +83,10 @@ func (m *MatrixImpl) CalcNextGen() {
 		}
 	}
 	for i, e := range nextGen {
-		copy(m.curGen[i],e)
+		copy(m.curGen[i], e)
 	}
+	done <- true
+
 }
 
 func (m *MatrixImpl) PrintCurGen() {

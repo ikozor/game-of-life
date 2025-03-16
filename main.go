@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	dead := '_'
+	dead := ' '
 	alive := '*'
 
 	if len(os.Args) == 3 {
@@ -25,10 +25,13 @@ func main() {
 		panic("Cannot Create Screen")
 	}
 
+	screen.UpdateWithMatrix(game.GetCurGen())
+	ch := make(chan bool)
 	for screen.CaptureEscape() {
+		go game.CalcNextGen(ch)
 		screen.UpdateWithMatrix(game.GetCurGen())
-		game.CalcNextGen()
-		time.Sleep(100 * time.Millisecond)
+		<- ch
+		time.Sleep(10 * time.Millisecond)
 	}
 	screen.Finished()
 }
