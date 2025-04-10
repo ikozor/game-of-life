@@ -1,2 +1,3 @@
 method: matrix
-file: ./input_files/gundestroyedbygliders.txt
+file: ./input_files/backrake1.txt
+itertime: 10

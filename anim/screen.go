@@ -51,7 +51,7 @@ func (s *screen) CaptureEscape() bool {
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-			return false
+
 		}
 	}
 	return true

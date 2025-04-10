@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+
+	"github.com/ikozor/game-of-life/game"
 )
 
 type MatrixImpl struct {
@@ -96,6 +98,6 @@ func (m *MatrixImpl) PrintCurGen() {
 	}
 }
 
-func (m *MatrixImpl) GetCurGen() [][]int8 {
-	return m.curGen
+func (m *MatrixImpl) GetCurGen() game.GameData {
+	return game.GameData{Matrix: m.curGen}
 }

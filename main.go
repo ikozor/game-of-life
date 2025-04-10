@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/ikozor/game-of-life/anim"
+	"github.com/ikozor/game-of-life/game"
 	"github.com/ikozor/game-of-life/mtx-impl"
+	mtxloop "github.com/ikozor/game-of-life/mtx-loop"
 	"gopkg.in/yaml.v3"
 )
 
@@ -19,26 +20,39 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	game, err := mtximpl.CreateNewGame(input.File, dead, alive)
+	var game game.Game
+	switch input.Method {
+	case "matrix":
+		game, err = mtximpl.CreateNewGame(input.File, dead, alive)
+	case "matrix-loop":
+		game, err = mtxloop.CreateNewGame(input.File, dead, alive)
+	}
 	if err != nil {
 		panic(err)
 	}
+
 	screen, err := anim.CreateScreen(dead, alive)
 	if err != nil {
 		panic("Cannot Create Screen")
 	}
 
-	screen.UpdateWithMatrix(game.GetCurGen())
+	switch input.Method {
+	case "matrix":
+		fallthrough
+	case "matrix-loop":
+		screen.UpdateWithMatrix(game.GetCurGen().Matrix)
+	}
 	ch := make(chan bool)
 	for screen.CaptureEscape() {
 		go game.CalcNextGen(ch)
 		switch input.Method {
 		case "matrix":
-			screen.UpdateWithMatrix(game.GetCurGen())
+			fallthrough
+		case "matrix-loop":
+			screen.UpdateWithMatrix(game.GetCurGen().Matrix)
 		}
 		<-ch
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(time.Duration(input.IterTime) * time.Millisecond)
 	}
 	screen.Finished()
 }
@@ -62,7 +76,6 @@ func getUserInput() (*userInput, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(input)
 		return input, nil
 
 	}
@@ -70,6 +83,7 @@ func getUserInput() (*userInput, error) {
 }
 
 type userInput struct {
-	Method string `yaml:"method"`
-	File   string `yaml:"file"`
+	Method   string `yaml:"method"`
+	File     string `yaml:"file"`
+	IterTime int    `yaml:"itertime"`
 }
