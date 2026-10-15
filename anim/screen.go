@@ -42,7 +42,22 @@ func (s *screen) UpdateWithMatrix(matrix [][]int8) {
 		}
 
 	}
-	s.screen.PostEvent(nil)
+	//s.screen.PostEvent(nil)
+	s.screen.Show()
+}
+
+func (s *screen) UpdateWithMatrixLoop(matrix [][]int8) {
+	for y := range len(matrix) {
+		for x := range len(matrix[y]) {
+			if matrix[y][x] == 1 {
+				s.screen.SetContent(x, y, s.Alive, nil, s.defStyle)
+			} else {
+				s.screen.SetContent(x, y, s.Dead, nil, s.defStyle)
+			}
+		}
+
+	}
+	//s.screen.PostEvent(nil)
 	s.screen.Show()
 }
 
@@ -51,7 +66,7 @@ func (s *screen) CaptureEscape() bool {
 	switch ev := ev.(type) {
 	case *tcell.EventKey:
 		if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-
+			return false
 		}
 	}
 	return true

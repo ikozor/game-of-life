@@ -19,11 +19,15 @@ func CreateNewGame(inputPath string, dead, alive rune) (*MatrixImpl, error) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
+	if scanner.Err() != nil {
+		return nil, scanner.Err()
+	}
 
 	matrix := [][]int8{}
 	scanner.Scan()
 
-	// to create a "wall"
+	// This is similar to creation a "wall" in the MatrixImpl
+	// Create a temporary empty wall fill in with data after the first scan is complete
 	width := len(scanner.Text()) + 2
 	y := 0
 	matrix = append(matrix, make([]int8, width))
@@ -32,26 +36,44 @@ func CreateNewGame(inputPath string, dead, alive rune) (*MatrixImpl, error) {
 
 	// first run because we already scanned first row to get width
 	matrix = append(matrix, make([]int8, width))
+	xLen := 2
 	for x, e := range scanner.Text() {
+		xLen++
 		if e == alive {
 			matrix[y][x+1] = 1
 		} else {
 			matrix[y][x+1] = 0
 		}
 	}
+	if xLen != width {
+		return nil, fmt.Errorf("Matrix rows is not uniform size, original width: %d, row %d width: %d",
+			width,
+			y, xLen)
+	}
 	y++
 
+	// Continue scanning after first row
 	for scanner.Scan() {
+		xLen = 2
 		matrix = append(matrix, make([]int8, width))
 		for x, e := range scanner.Text() {
+			xLen++
 			if e == alive {
 				matrix[y][x+1] = 1
 			} else {
 				matrix[y][x+1] = 0
 			}
 		}
+
+		if xLen != width {
+			return nil, fmt.Errorf("Matrix rows is not uniform size, original width: %d, row %d width: %d",
+				width-2,
+				y, xLen-2)
+		}
 		y++
 	}
+
+	// Final wall row
 	matrix = append(matrix, make([]int8, width))
 
 	return &MatrixImpl{curGen: matrix}, nil

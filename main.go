@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 
 func main() {
 
-	dead := ' '
+	dead := '.'
 	alive := '*'
 
 	input, err := getUserInput()
@@ -26,6 +27,8 @@ func main() {
 		game, err = mtximpl.CreateNewGame(input.File, dead, alive)
 	case "matrix-loop":
 		game, err = mtxloop.CreateNewGame(input.File, dead, alive)
+	default:
+		panic(fmt.Sprintf("implementation not found: %s", input.Method))
 	}
 	if err != nil {
 		panic(err)
@@ -38,23 +41,24 @@ func main() {
 
 	switch input.Method {
 	case "matrix":
-		fallthrough
-	case "matrix-loop":
 		screen.UpdateWithMatrix(game.GetCurGen().Matrix)
+	case "matrix-loop":
+		screen.UpdateWithMatrixLoop(game.GetCurGen().Matrix)
 	}
 	ch := make(chan bool)
 	for screen.CaptureEscape() {
 		go game.CalcNextGen(ch)
 		switch input.Method {
 		case "matrix":
-			fallthrough
-		case "matrix-loop":
 			screen.UpdateWithMatrix(game.GetCurGen().Matrix)
+		case "matrix-loop":
+			screen.UpdateWithMatrixLoop(game.GetCurGen().Matrix)
 		}
 		<-ch
 		time.Sleep(time.Duration(input.IterTime) * time.Millisecond)
 	}
 	screen.Finished()
+
 }
 
 func getUserInput() (*userInput, error) {
